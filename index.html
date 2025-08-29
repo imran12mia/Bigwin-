@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BigWin Demo</title>
+  <title>BigWin Color Game</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -16,119 +16,99 @@
       background: rgba(0,0,0,0.6);
       padding: 20px;
       border-radius: 10px;
-      width: 300px;
+      width: 320px;
       margin: auto;
     }
-    input {
+    input, button, select {
       width: 90%;
-      padding: 8px;
-      margin: 8px 0;
+      padding: 10px;
+      margin: 10px 0;
       border: none;
       border-radius: 5px;
     }
     button {
-      width: 95%;
-      padding: 10px;
-      background: #ff9800;
-      border: none;
-      border-radius: 5px;
+      background: orange;
       color: white;
       font-weight: bold;
       cursor: pointer;
     }
-    button:hover {
-      background: #e68900;
+    .result {
+      margin-top: 15px;
+      font-size: 18px;
     }
-    .hidden { display: none; }
   </style>
 </head>
 <body>
 
-  <h1>🎮 BigWin Demo Site</h1>
-  <div id="authBox" class="box">
+  <h1>🎮 BigWin Color Game 🎮</h1>
+
+  <div class="box" id="loginBox">
     <h2>Login</h2>
-    <input type="text" id="username" placeholder="Username"><br>
-    <input type="password" id="password" placeholder="Password"><br>
+    <input type="text" id="username" placeholder="Enter Username">
     <button onclick="login()">Login</button>
-    <p>Not registered? <a href="#" onclick="showRegister()">Create Account</a></p>
   </div>
 
-  <div id="registerBox" class="box hidden">
-    <h2>Register</h2>
-    <input type="text" id="newUser" placeholder="Choose Username"><br>
-    <input type="password" id="newPass" placeholder="Choose Password"><br>
-    <button onclick="register()">Register</button>
-    <p>Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
-  </div>
-
-  <div id="gameBox" class="box hidden">
+  <div class="box" id="gameBox" style="display:none;">
     <h2>Welcome, <span id="player"></span> 🎉</h2>
     <p>Your Coins: <span id="coins">1000</span></p>
-    <button onclick="playGame()">Play Game (−100 coins)</button><br><br>
+
+    <h3>Choose a Color:</h3>
+    <select id="userChoice">
+      <option value="Red">🔴 Red</option>
+      <option value="Green">🟢 Green</option>
+      <option value="Blue">🔵 Blue</option>
+    </select>
+
+    <button onclick="playGame()">Play (-100 coins)</button>
+    <div class="result" id="result"></div>
+
     <button onclick="logout()">Logout</button>
   </div>
 
-  <script>
-    // Show/hide forms
-    function showRegister() {
-      document.getElementById("authBox").classList.add("hidden");
-      document.getElementById("registerBox").classList.remove("hidden");
+<script>
+  let coins = 1000;
+
+  function login(){
+    let username = document.getElementById("username").value;
+    if(username.trim() === ""){
+      alert("Enter a username!");
+      return;
     }
-    function showLogin() {
-      document.getElementById("registerBox").classList.add("hidden");
-      document.getElementById("authBox").classList.remove("hidden");
+    localStorage.setItem("user", username);
+    localStorage.setItem("coins", coins);
+    document.getElementById("player").innerText = username;
+    document.getElementById("coins").innerText = coins;
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("gameBox").style.display = "block";
+  }
+
+  function playGame(){
+    let choice = document.getElementById("userChoice").value;
+    let colors = ["Red","Green","Blue"];
+    let random = colors[Math.floor(Math.random()*3)];
+
+    coins -= 100; // deduct cost
+    let message = `System chose: ${random} 🎲<br>`;
+
+    if(choice === random){
+      coins += 300; // reward
+      message += "🎉 You WIN! +300 coins";
+    } else {
+      message += "❌ You Lose!";
     }
 
-    // Register user
-    function register() {
-      let user = document.getElementById("newUser").value;
-      let pass = document.getElementById("newPass").value;
-      if(user && pass){
-        localStorage.setItem("user", user);
-        localStorage.setItem("pass", pass);
-        localStorage.setItem("coins", 1000);
-        alert("Account created! Now login.");
-        showLogin();
-      } else {
-        alert("Please enter username & password");
-      }
-    }
+    localStorage.setItem("coins", coins);
+    document.getElementById("coins").innerText = coins;
+    document.getElementById("result").innerHTML = message;
+  }
 
-    // Login
-    function login() {
-      let user = document.getElementById("username").value;
-      let pass = document.getElementById("password").value;
-      let savedUser = localStorage.getItem("user");
-      let savedPass = localStorage.getItem("pass");
-      if(user === savedUser && pass === savedPass){
-        document.getElementById("authBox").classList.add("hidden");
-        document.getElementById("gameBox").classList.remove("hidden");
-        document.getElementById("player").innerText = user;
-        document.getElementById("coins").innerText = localStorage.getItem("coins");
-      } else {
-        alert("Invalid login!");
-      }
-    }
-
-    // Play game (just coin deduction)
-    function playGame() {
-      let coins = parseInt(localStorage.getItem("coins")) || 0;
-      if(coins >= 100){
-        coins -= 100;
-        localStorage.setItem("coins", coins);
-        document.getElementById("coins").innerText = coins;
-        alert("🎲 You played the game! -100 coins");
-      } else {
-        alert("Not enough coins!");
-      }
-    }
-
-    // Logout
-    function logout() {
-      document.getElementById("gameBox").classList.add("hidden");
-      document.getElementById("authBox").classList.remove("hidden");
-    }
-  </script>
+  function logout(){
+    localStorage.removeItem("user");
+    localStorage.removeItem("coins");
+    document.getElementById("gameBox").style.display = "none";
+    document.getElementById("loginBox").style.display = "block";
+  }
+</script>
 
 </body>
-  </html>
+</html>

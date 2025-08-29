@@ -1,215 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BigWin Color Game</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      background: linear-gradient(120deg, #00c6ff, #0072ff);
-      color: white;
-      padding: 20px;
-    }
-    .box {
-      background: rgba(0,0,0,0.6);
-      padding: 20px;
-      border-radius: 10px;
-      width: 360px;
-      margin: auto;
-      margin-top: 20px;
-    }
-    input, button, select {
-      width: 90%;
-      padding: 10px;
-      margin: 8px 0;
-      border: none;
-      border-radius: 5px;
-    }
-    button {
-      background: orange;
-      color: black;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    button:hover {
-      background: gold;
-    }
-    table {
-      width: 100%;
-      margin-top: 10px;
-      border-collapse: collapse;
-      color: white;
-      font-size: 13px;
-    }
-    th, td {
-      border: 1px solid white;
-      padding: 6px;
-    }
-  </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Color Game - WinGo Demo</title>
+  <!-- CSS file link -->
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
+  <div class="container">
+    <h1>🎮 Color Game (Demo)</h1>
 
-  <h2>🎮 BigWin Color Game</h2>
+    <!-- User Info -->
+    <div class="user-panel">
+      <p id="userCoins">💰 Coins: 1000</p>
+      <button onclick="deposit()">➕ Deposit</button>
+      <button onclick="withdraw()">➖ Withdraw</button>
+    </div>
 
-  <!-- Login -->
-  <div id="loginBox" class="box">
-    <h3>Login</h3>
-    <input type="text" id="username" placeholder="Enter username">
-    <button onclick="login()">Login</button>
+    <!-- Game Section -->
+    <div class="game">
+      <h2>Pick a Color</h2>
+      <button class="color-btn red" onclick="playGame('red')">🔴 Red</button>
+      <button class="color-btn green" onclick="playGame('green')">🟢 Green</button>
+      <button class="color-btn blue" onclick="playGame('blue')">🔵 Blue</button>
+    </div>
+
+    <!-- Result -->
+    <div class="result">
+      <p id="resultText">Result will appear here...</p>
+    </div>
+
+    <!-- History -->
+    <div class="history">
+      <h3>📜 Game History</h3>
+      <ul id="historyList"></ul>
+    </div>
   </div>
 
-  <!-- Game -->
-  <div id="gameBox" class="box" style="display:none;">
-    <h3 id="welcome"></h3>
-    <p id="coins"></p>
-
-    <h4>Choose a color:</h4>
-    <select id="colorChoice">
-      <option value="red">🔴 Red</option>
-      <option value="green">🟢 Green</option>
-      <option value="blue">🔵 Blue</option>
-    </select>
-    <button onclick="playGame()">Play (-100 coins)</button>
-
-    <p id="result"></p>
-
-    <hr>
-    <!-- Fake Deposit -->
-    <h4>💰 Deposit Coins</h4>
-    <input type="number" id="depositAmount" placeholder="Enter amount">
-    <button onclick="deposit()">Deposit</button>
-
-    <!-- Fake Withdraw -->
-    <h4>🏧 Withdraw Coins</h4>
-    <input type="number" id="withdrawAmount" placeholder="Enter amount">
-    <button onclick="withdraw()">Withdraw</button>
-
-    <p id="transaction"></p>
-
-    <hr>
-    <!-- Transaction History -->
-    <h4>📜 Transaction History</h4>
-    <table id="historyTable">
-      <tr>
-        <th>Time</th>
-        <th>Action</th>
-        <th>Details</th>
-      </tr>
-    </table>
-
-    <hr>
-    <button onclick="logout()">Logout</button>
-  </div>
-
-  <script>
-    let user = null;
-
-    function login() {
-      const name = document.getElementById("username").value;
-      if(name.trim() === "") {
-        alert("Please enter username");
-        return;
-      }
-      user = {name: name, coins: 1000, history: []};
-      localStorage.setItem("bigwinUser", JSON.stringify(user));
-      showGame();
-    }
-
-    function showGame() {
-      user = JSON.parse(localStorage.getItem("bigwinUser"));
-      if(user) {
-        document.getElementById("loginBox").style.display = "none";
-        document.getElementById("gameBox").style.display = "block";
-        document.getElementById("welcome").innerText = "Welcome, " + user.name + " 🎉";
-        document.getElementById("coins").innerText = "Your Coins: " + user.coins;
-        renderHistory();
-      }
-    }
-
-    function playGame() {
-      if(user.coins < 100) {
-        alert("Not enough coins!");
-        return;
-      }
-      user.coins -= 100;
-
-      const colors = ["red", "green", "blue"];
-      const winColor = colors[Math.floor(Math.random()*colors.length)];
-      const choice = document.getElementById("colorChoice").value;
-
-      let resultText = "Winning color was " + winColor + ". ";
-      if(choice === winColor) {
-        user.coins += 500;
-        resultText += "🎉 You WON +500 coins!";
-        addHistory("Game", "Played " + choice + " → WIN");
-      } else {
-        resultText += "❌ You lost.";
-        addHistory("Game", "Played " + choice + " → LOSE");
-      }
-
-      document.getElementById("result").innerText = resultText;
-      updateUser();
-    }
-
-    function deposit() {
-      const amount = parseInt(document.getElementById("depositAmount").value);
-      if(isNaN(amount) || amount <= 0) {
-        alert("Enter a valid amount!");
-        return;
-      }
-      user.coins += amount;
-      document.getElementById("transaction").innerText = "✅ Deposited " + amount + " coins!";
-      addHistory("Deposit", "Added " + amount + " coins");
-      updateUser();
-    }
-
-    function withdraw() {
-      const amount = parseInt(document.getElementById("withdrawAmount").value);
-      if(isNaN(amount) || amount <= 0) {
-        alert("Enter a valid amount!");
-        return;
-      }
-      if(amount > user.coins) {
-        alert("Not enough coins to withdraw!");
-        return;
-      }
-      user.coins -= amount;
-      document.getElementById("transaction").innerText = "🏧 Withdrawn " + amount + " coins!";
-      addHistory("Withdraw", "Removed " + amount + " coins");
-      updateUser();
-    }
-
-    function addHistory(action, details) {
-      const now = new Date();
-      const timestamp = now.toLocaleString();
-      user.history.push({time: timestamp, action: action, details: details});
-    }
-
-    function renderHistory() {
-      const table = document.getElementById("historyTable");
-      table.innerHTML = "<tr><th>Time</th><th>Action</th><th>Details</th></tr>";
-      user.history.forEach(item => {
-        const row = "<tr><td>" + item.time + "</td><td>" + item.action + "</td><td>" + item.details + "</td></tr>";
-        table.innerHTML += row;
-      });
-    }
-
-    function updateUser() {
-      localStorage.setItem("bigwinUser", JSON.stringify(user));
-      document.getElementById("coins").innerText = "Your Coins: " + user.coins;
-      renderHistory();
-    }
-
-    function logout() {
-      localStorage.removeItem("bigwinUser");
-      document.getElementById("loginBox").style.display = "block";
-      document.getElementById("gameBox").style.display = "none";
-    }
-
-    window.onload = showGame;
-  </script>
-
+  <!-- JS file link -->
+  <script src="script.js"></script>
 </body>
 </html>

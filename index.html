@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BigWin Demo</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: linear-gradient(120deg, #00c6ff, #0072ff);
+      color: white;
+      padding: 40px;
+    }
+    .box {
+      background: rgba(0,0,0,0.6);
+      padding: 20px;
+      border-radius: 10px;
+      width: 300px;
+      margin: auto;
+    }
+    input {
+      width: 90%;
+      padding: 8px;
+      margin: 8px 0;
+      border: none;
+      border-radius: 5px;
+    }
+    button {
+      width: 95%;
+      padding: 10px;
+      background: #ff9800;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #e68900;
+    }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+
+  <h1>🎮 BigWin Demo Site</h1>
+  <div id="authBox" class="box">
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username"><br>
+    <input type="password" id="password" placeholder="Password"><br>
+    <button onclick="login()">Login</button>
+    <p>Not registered? <a href="#" onclick="showRegister()">Create Account</a></p>
+  </div>
+
+  <div id="registerBox" class="box hidden">
+    <h2>Register</h2>
+    <input type="text" id="newUser" placeholder="Choose Username"><br>
+    <input type="password" id="newPass" placeholder="Choose Password"><br>
+    <button onclick="register()">Register</button>
+    <p>Already have an account? <a href="#" onclick="showLogin()">Login</a></p>
+  </div>
+
+  <div id="gameBox" class="box hidden">
+    <h2>Welcome, <span id="player"></span> 🎉</h2>
+    <p>Your Coins: <span id="coins">1000</span></p>
+    <button onclick="playGame()">Play Game (−100 coins)</button><br><br>
+    <button onclick="logout()">Logout</button>
+  </div>
+
+  <script>
+    // Show/hide forms
+    function showRegister() {
+      document.getElementById("authBox").classList.add("hidden");
+      document.getElementById("registerBox").classList.remove("hidden");
+    }
+    function showLogin() {
+      document.getElementById("registerBox").classList.add("hidden");
+      document.getElementById("authBox").classList.remove("hidden");
+    }
+
+    // Register user
+    function register() {
+      let user = document.getElementById("newUser").value;
+      let pass = document.getElementById("newPass").value;
+      if(user && pass){
+        localStorage.setItem("user", user);
+        localStorage.setItem("pass", pass);
+        localStorage.setItem("coins", 1000);
+        alert("Account created! Now login.");
+        showLogin();
+      } else {
+        alert("Please enter username & password");
+      }
+    }
+
+    // Login
+    function login() {
+      let user = document.getElementById("username").value;
+      let pass = document.getElementById("password").value;
+      let savedUser = localStorage.getItem("user");
+      let savedPass = localStorage.getItem("pass");
+      if(user === savedUser && pass === savedPass){
+        document.getElementById("authBox").classList.add("hidden");
+        document.getElementById("gameBox").classList.remove("hidden");
+        document.getElementById("player").innerText = user;
+        document.getElementById("coins").innerText = localStorage.getItem("coins");
+      } else {
+        alert("Invalid login!");
+      }
+    }
+
+    // Play game (just coin deduction)
+    function playGame() {
+      let coins = parseInt(localStorage.getItem("coins")) || 0;
+      if(coins >= 100){
+        coins -= 100;
+        localStorage.setItem("coins", coins);
+        document.getElementById("coins").innerText = coins;
+        alert("🎲 You played the game! -100 coins");
+      } else {
+        alert("Not enough coins!");
+      }
+    }
+
+    // Logout
+    function logout() {
+      document.getElementById("gameBox").classList.add("hidden");
+      document.getElementById("authBox").classList.remove("hidden");
+    }
+  </script>
+
+</body>
+  </html>

@@ -10,7 +10,7 @@
       text-align: center;
       background: linear-gradient(120deg, #00c6ff, #0072ff);
       color: white;
-      padding: 40px;
+      padding: 20px;
     }
     .box {
       background: rgba(0,0,0,0.6);
@@ -18,97 +18,155 @@
       border-radius: 10px;
       width: 320px;
       margin: auto;
+      margin-top: 20px;
     }
     input, button, select {
       width: 90%;
       padding: 10px;
-      margin: 10px 0;
+      margin: 8px 0;
       border: none;
       border-radius: 5px;
     }
     button {
       background: orange;
-      color: white;
+      color: black;
       font-weight: bold;
       cursor: pointer;
     }
-    .result {
-      margin-top: 15px;
-      font-size: 18px;
+    button:hover {
+      background: gold;
     }
   </style>
 </head>
 <body>
 
-  <h1>🎮 BigWin Color Game 🎮</h1>
+  <h2>🎮 BigWin Color Game</h2>
 
-  <div class="box" id="loginBox">
-    <h2>Login</h2>
-    <input type="text" id="username" placeholder="Enter Username">
+  <!-- Login -->
+  <div id="loginBox" class="box">
+    <h3>Login</h3>
+    <input type="text" id="username" placeholder="Enter username">
     <button onclick="login()">Login</button>
   </div>
 
-  <div class="box" id="gameBox" style="display:none;">
-    <h2>Welcome, <span id="player"></span> 🎉</h2>
-    <p>Your Coins: <span id="coins">1000</span></p>
+  <!-- Game -->
+  <div id="gameBox" class="box" style="display:none;">
+    <h3 id="welcome"></h3>
+    <p id="coins"></p>
 
-    <h3>Choose a Color:</h3>
-    <select id="userChoice">
-      <option value="Red">🔴 Red</option>
-      <option value="Green">🟢 Green</option>
-      <option value="Blue">🔵 Blue</option>
+    <h4>Choose a color:</h4>
+    <select id="colorChoice">
+      <option value="red">🔴 Red</option>
+      <option value="green">🟢 Green</option>
+      <option value="blue">🔵 Blue</option>
     </select>
-
     <button onclick="playGame()">Play (-100 coins)</button>
-    <div class="result" id="result"></div>
 
+    <p id="result"></p>
+
+    <hr>
+    <!-- Fake Deposit -->
+    <h4>💰 Deposit Coins</h4>
+    <input type="number" id="depositAmount" placeholder="Enter amount">
+    <button onclick="deposit()">Deposit</button>
+
+    <!-- Fake Withdraw -->
+    <h4>🏧 Withdraw Coins</h4>
+    <input type="number" id="withdrawAmount" placeholder="Enter amount">
+    <button onclick="withdraw()">Withdraw</button>
+
+    <p id="transaction"></p>
+
+    <hr>
     <button onclick="logout()">Logout</button>
   </div>
 
-<script>
-  let coins = 1000;
+  <script>
+    let user = null;
 
-  function login(){
-    let username = document.getElementById("username").value;
-    if(username.trim() === ""){
-      alert("Enter a username!");
-      return;
-    }
-    localStorage.setItem("user", username);
-    localStorage.setItem("coins", coins);
-    document.getElementById("player").innerText = username;
-    document.getElementById("coins").innerText = coins;
-    document.getElementById("loginBox").style.display = "none";
-    document.getElementById("gameBox").style.display = "block";
-  }
-
-  function playGame(){
-    let choice = document.getElementById("userChoice").value;
-    let colors = ["Red","Green","Blue"];
-    let random = colors[Math.floor(Math.random()*3)];
-
-    coins -= 100; // deduct cost
-    let message = `System chose: ${random} 🎲<br>`;
-
-    if(choice === random){
-      coins += 300; // reward
-      message += "🎉 You WIN! +300 coins";
-    } else {
-      message += "❌ You Lose!";
+    function login() {
+      const name = document.getElementById("username").value;
+      if(name.trim() === "") {
+        alert("Please enter username");
+        return;
+      }
+      user = {name: name, coins: 1000};
+      localStorage.setItem("bigwinUser", JSON.stringify(user));
+      showGame();
     }
 
-    localStorage.setItem("coins", coins);
-    document.getElementById("coins").innerText = coins;
-    document.getElementById("result").innerHTML = message;
-  }
+    function showGame() {
+      user = JSON.parse(localStorage.getItem("bigwinUser"));
+      if(user) {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("gameBox").style.display = "block";
+        document.getElementById("welcome").innerText = "Welcome, " + user.name + " 🎉";
+        document.getElementById("coins").innerText = "Your Coins: " + user.coins;
+      }
+    }
 
-  function logout(){
-    localStorage.removeItem("user");
-    localStorage.removeItem("coins");
-    document.getElementById("gameBox").style.display = "none";
-    document.getElementById("loginBox").style.display = "block";
-  }
-</script>
+    function playGame() {
+      if(user.coins < 100) {
+        alert("Not enough coins!");
+        return;
+      }
+      user.coins -= 100;
+
+      const colors = ["red", "green", "blue"];
+      const winColor = colors[Math.floor(Math.random()*colors.length)];
+      const choice = document.getElementById("colorChoice").value;
+
+      let resultText = "Winning color was " + winColor + ". ";
+      if(choice === winColor) {
+        user.coins += 500;
+        resultText += "🎉 You WON +500 coins!";
+      } else {
+        resultText += "❌ You lost.";
+      }
+
+      document.getElementById("result").innerText = resultText;
+      updateUser();
+    }
+
+    function deposit() {
+      const amount = parseInt(document.getElementById("depositAmount").value);
+      if(isNaN(amount) || amount <= 0) {
+        alert("Enter a valid amount!");
+        return;
+      }
+      user.coins += amount;
+      document.getElementById("transaction").innerText = "✅ Deposited " + amount + " coins!";
+      updateUser();
+    }
+
+    function withdraw() {
+      const amount = parseInt(document.getElementById("withdrawAmount").value);
+      if(isNaN(amount) || amount <= 0) {
+        alert("Enter a valid amount!");
+        return;
+      }
+      if(amount > user.coins) {
+        alert("Not enough coins to withdraw!");
+        return;
+      }
+      user.coins -= amount;
+      document.getElementById("transaction").innerText = "🏧 Withdrawn " + amount + " coins!";
+      updateUser();
+    }
+
+    function updateUser() {
+      localStorage.setItem("bigwinUser", JSON.stringify(user));
+      document.getElementById("coins").innerText = "Your Coins: " + user.coins;
+    }
+
+    function logout() {
+      localStorage.removeItem("bigwinUser");
+      document.getElementById("loginBox").style.display = "block";
+      document.getElementById("gameBox").style.display = "none";
+    }
+
+    window.onload = showGame;
+  </script>
 
 </body>
 </html>

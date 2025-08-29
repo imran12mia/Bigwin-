@@ -16,7 +16,7 @@
       background: rgba(0,0,0,0.6);
       padding: 20px;
       border-radius: 10px;
-      width: 320px;
+      width: 360px;
       margin: auto;
       margin-top: 20px;
     }
@@ -35,6 +35,17 @@
     }
     button:hover {
       background: gold;
+    }
+    table {
+      width: 100%;
+      margin-top: 10px;
+      border-collapse: collapse;
+      color: white;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid white;
+      padding: 6px;
     }
   </style>
 </head>
@@ -78,6 +89,17 @@
     <p id="transaction"></p>
 
     <hr>
+    <!-- Transaction History -->
+    <h4>📜 Transaction History</h4>
+    <table id="historyTable">
+      <tr>
+        <th>Time</th>
+        <th>Action</th>
+        <th>Details</th>
+      </tr>
+    </table>
+
+    <hr>
     <button onclick="logout()">Logout</button>
   </div>
 
@@ -90,7 +112,7 @@
         alert("Please enter username");
         return;
       }
-      user = {name: name, coins: 1000};
+      user = {name: name, coins: 1000, history: []};
       localStorage.setItem("bigwinUser", JSON.stringify(user));
       showGame();
     }
@@ -102,6 +124,7 @@
         document.getElementById("gameBox").style.display = "block";
         document.getElementById("welcome").innerText = "Welcome, " + user.name + " 🎉";
         document.getElementById("coins").innerText = "Your Coins: " + user.coins;
+        renderHistory();
       }
     }
 
@@ -120,8 +143,10 @@
       if(choice === winColor) {
         user.coins += 500;
         resultText += "🎉 You WON +500 coins!";
+        addHistory("Game", "Played " + choice + " → WIN");
       } else {
         resultText += "❌ You lost.";
+        addHistory("Game", "Played " + choice + " → LOSE");
       }
 
       document.getElementById("result").innerText = resultText;
@@ -136,6 +161,7 @@
       }
       user.coins += amount;
       document.getElementById("transaction").innerText = "✅ Deposited " + amount + " coins!";
+      addHistory("Deposit", "Added " + amount + " coins");
       updateUser();
     }
 
@@ -151,12 +177,29 @@
       }
       user.coins -= amount;
       document.getElementById("transaction").innerText = "🏧 Withdrawn " + amount + " coins!";
+      addHistory("Withdraw", "Removed " + amount + " coins");
       updateUser();
+    }
+
+    function addHistory(action, details) {
+      const now = new Date();
+      const timestamp = now.toLocaleString();
+      user.history.push({time: timestamp, action: action, details: details});
+    }
+
+    function renderHistory() {
+      const table = document.getElementById("historyTable");
+      table.innerHTML = "<tr><th>Time</th><th>Action</th><th>Details</th></tr>";
+      user.history.forEach(item => {
+        const row = "<tr><td>" + item.time + "</td><td>" + item.action + "</td><td>" + item.details + "</td></tr>";
+        table.innerHTML += row;
+      });
     }
 
     function updateUser() {
       localStorage.setItem("bigwinUser", JSON.stringify(user));
       document.getElementById("coins").innerText = "Your Coins: " + user.coins;
+      renderHistory();
     }
 
     function logout() {

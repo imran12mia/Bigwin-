@@ -326,8 +326,3 @@ async def main() -> None:
     logger.info("Bot started polling.")
     # পোলিং শুরু করুন
     await application.run_polling(allowed_updates=Update.ALL_TYPES)
-
-
-if __name__ == "__main__':
-    import asyncio
-    asyncio.run(main())
